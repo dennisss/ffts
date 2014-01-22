@@ -152,7 +152,7 @@ JNIEXPORT jlong JNICALL Java_nz_ac_waikato_ffts_FFTS_real_1nd
 	int i;
 
 	// Needs to convert java int array to size_t array
-	// Get the int elements and conver to C type
+	// Get the int elements and convert to C type
 	Ns = alloca(sizeof(*Ns) * n);
 	cNs = alloca(sizeof(int) * n);
 	(*env)->GetIntArrayRegion(env, jNs, 0, n, cNs);
@@ -166,8 +166,8 @@ JNIEXPORT jlong JNICALL Java_nz_ac_waikato_ffts_FFTS_real_1nd
 	return (jlong)plan;
 }
 
-JNIEXPORT void JNICALL Java_nz_ac_waikato_ffts_FFTS_execute__JJ_3FI_3FI
-(JNIEnv *env, jclass jc, jlong p, jlong size, jfloatArray jsrc, jint soff, jfloatArray jdst, jint doff) {
+JNIEXPORT void JNICALL Java_nz_ac_waikato_ffts_FFTS_execute__JJJ_3FI_3FI
+(JNIEnv *env, jclass jc, jlong p, jlong srcsize, jlong dstsize, jfloatArray jsrc, jint soff, jfloatArray jdst, jint doff) {
 	ffts_plan_t *plan = (ffts_plan_t *)p;
 
 	// TODO: check performance on android/arm
@@ -175,21 +175,21 @@ JNIEXPORT void JNICALL Java_nz_ac_waikato_ffts_FFTS_execute__JJ_3FI_3FI
 	// On oracle jvm this is faster than GetFloatArrayElements()
 	void *src, *dst;
 
-	src = xmemalign(64, size * 4);
+	src = xmemalign(64, srcsize * sizeof(float));
 	if (!src) {
 		throwOutOfMemoryError(env, NULL);
 		return;
 	}
-	dst = xmemalign(64, size * 4);
+	dst = xmemalign(64, dstsize * sizeof(float));
 	if (!dst) {
 		free(src);
 		throwOutOfMemoryError(env, NULL);
 		return;
 	}
 
-	(*env)->GetFloatArrayRegion(env, jsrc, 0, size, src + soff);
+	(*env)->GetFloatArrayRegion(env, jsrc, 0, srcsize, src + soff);
 	ffts_execute(plan, src, dst);
-	(*env)->SetFloatArrayRegion(env, jdst, 0, size, dst + doff);
+	(*env)->SetFloatArrayRegion(env, jdst, 0, dstsize, dst + doff);
 
 	free(dst);
 	free(src);
@@ -216,8 +216,8 @@ JNIEXPORT void JNICALL Java_nz_ac_waikato_ffts_FFTS_execute__JJ_3FI_3FI
 #endif
 }
 
-JNIEXPORT void JNICALL Java_nz_ac_waikato_ffts_FFTS_execute__JJLjava_nio_FloatBuffer_2Ljava_nio_FloatBuffer_2
-(JNIEnv *env, jclass jc, jlong p, jlong size, jobject jsrc, jobject jdst) {
+JNIEXPORT void JNICALL Java_nz_ac_waikato_ffts_FFTS_execute__JLjava_nio_FloatBuffer_2Ljava_nio_FloatBuffer_2
+(JNIEnv *env, jclass jc, jlong p, jobject jsrc, jobject jdst) {
 	ffts_plan_t *plan = (ffts_plan_t *)p;
 	void *src = (*env)->GetDirectBufferAddress(env, jsrc);
 	void *dst = (*env)->GetDirectBufferAddress(env, jdst);

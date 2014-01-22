@@ -61,7 +61,7 @@ public class FFTS {
 	private FFTS(long p, long inSize, long outSize) {
 		this.p = p;
 		this.inSize = inSize;
-		this.outSize = inSize;
+		this.outSize = outSize;
 	}
 	/**
 	 * The sign to use for a forward transform.
@@ -135,11 +135,11 @@ public class FFTS {
 		if (p == 0)
 			throw new NullPointerException();
 
-		execute(p, inSize, src, soff, dst, doff);
+		execute(p, inSize, outSize, src, soff, dst, doff);
 	}
 
 	/**
-	 * Execute this plan with the given nio buffers.  The bufffers
+	 * Execute this plan with the given nio buffers.  The buffers
 	 * must be derived from direct buffers.
 	 *
 	 * The buffer position and limits are ignored.
@@ -153,7 +153,7 @@ public class FFTS {
 		if (p == 0)
 			throw new NullPointerException();
 
-		execute(p, inSize, src, dst);
+		execute(p, src, dst);
 	}
 
 	/**
@@ -195,9 +195,9 @@ public class FFTS {
 
 	protected static native long real_nd(int[] Ns, int sign);
 
-	protected static native void execute(long p, long size, float[] src, int soff, float[] dst, int doff);
+	protected static native void execute(long p, long srcsize, long dstsize, float[] src, int soff, float[] dst, int doff);
 
-	protected static native void execute(long p, long size, FloatBuffer src, FloatBuffer dst);
+	protected static native void execute(long p, FloatBuffer src, FloatBuffer dst);
 
 	protected static native void free(long p);
 }
